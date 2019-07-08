@@ -10,23 +10,21 @@ with open('./data/driving_log.csv') as csvfile:
     for line in reader:
         if count != 0:
             lines.append(line)
-            count += 1
+        count += 1
         
 images = []
 measurements = []
 
 for line in lines:
     source_path = line[0]
-    print(source_path)
     filename = source_path.split('/')[-1]
     current_path = './data/IMG/' + filename
-    print(current_path)
     
     image = ndimage.imread(current_path)
     images.append(image)
     measurement = float(line[3])
     measurements.append(measurement)
-    
+
 x_train = np.array(images)
 y_train = np.array(measurements)
 
@@ -46,6 +44,7 @@ model.add(Flatten())
 model.add(Dense(100))
 model.add(Dense(50))
 model.add(Dense(10))
+model.add(Dense(1))
 
 model.compile(loss='mse', optimizer='adam')
 model.fit(x_train, y_train, validation_split=0.2, shuffle=True)
