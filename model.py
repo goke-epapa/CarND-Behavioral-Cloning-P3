@@ -3,6 +3,7 @@ import cv2
 from scipy import ndimage
 import numpy as np
 
+# Load training data from CSV file
 samples = []
 with open('./data/driving_log.csv') as csvfile:
     reader = csv.reader(csvfile)
@@ -12,80 +13,48 @@ with open('./data/driving_log.csv') as csvfile:
             samples.append(line)
         count += 1
 
-def load_raw_data(csv_data):
-    images = []
-    measurements = []
 
-    for line in csv_data:
-        source_path = line[0]
+def load_raw_data(csv_data):
+    imgs = []
+    measures = []
+
+    for row in csv_data:
+        source_path = row[0]
         filename = source_path.split('/')[-1]
         current_path = './data/IMG/' + filename
 
         image = ndimage.imread(current_path)
-        images.append(image)
-        measurement = float(line[3])
-        measurements.append(measurement)
+        imgs.append(image)
+        measurement = float(row[3])
+        measures.append(measurement)
         
-    return images, measurements
+    return imgs, measures
 
-# Augment images
+
 def augment_images(raw_images, raw_measurements):
-    augmented_images, augmented_measurements = [], []
+    augmented_imgs, augmented_measures = [], []
     for image, measurement in zip(raw_images, raw_measurements):
-        augmented_images.append(image)
-        augmented_measurements.append(measurement)
-        augmented_images.append(cv2.flip(image, 1))
-        augmented_measurements.append(measurement * -1.0)
-    return augmented_images, augmented_measurements
+        augmented_imgs.append(image)
+        augmented_measures.append(measurement)
+        augmented_imgs.append(cv2.flip(image, 1))
+        augmented_measures.append(measurement * -1.0)
+    return augmented_imgs, augmented_measures
 
-import sklearn
-from sklearn.utils import shuffle
 
-# Generator 
-def generator(samples, batch_size=32):
-    num_samples = len(samples)
-    while 1:
-        shuffle(samples)
-        for offset in range(0, num_samples, batch_size):
-            batch_samples = samples[offset: offset + batch_size]
-            
-            images = []
-            angles = []
-            for batch_sample in batch_samples:
-                filename = batch_sample[0].split('/')[-1]
-                current_path = './data/IMG/' + filename
-
-                image = ndimage.imread(current_path)
-                images.append(image)
-                measurement = float(line[3])
-                angles.append(measurement)
-                
-                # Augment images
-                images.append(cv2.flip(image, 1))
-                angles.append(measurement * -1.0)
-            
-            x_train = np.array(images)
-            y_train = np.array(angles)
-            yield shuffle(x_train, y_train)
-         
+# Load raw images
 images, measurements = load_raw_data(samples)
+
+
+# Augment images by flipping images and multiplying measurements by -1
 augmented_images, augmented_measurements = augment_images(images, measurements)
 x_train = np.array(augmented_images)
 y_train = np.array(augmented_measurements)
 
-from sklearn.model_selection import train_test_split
-def get_generators(batch_size=1000):
-    train_samples, validation_samples = train_test_split(samples, test_size=0.2)
-    return generator(train_samples, batch_size=batch_size), generator(validation_samples, batch_size=batch_size) 
 
-# use generator function
-# train_generator, validation_generator = get_generators()
-
-# Nvidia Self Driving Car Model 
+# Nvidia Self Driving Car CNN
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D
 from keras.layers.convolutional import Conv2D
-from math import ceil
 
 model = Sequential()
 model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=(160, 320, 3)))
@@ -102,7 +71,9 @@ model.add(Dense(10))
 model.add(Dense(1))
 
 model.compile(loss='mse', optimizer='adam')
-model.fit(x_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=3)
-# model.fit_generator(train_generator, steps_per_epoch=ceil(len(train_samples)/batch_size), validation_data=validation_generator, validation_steps=ceil(len(validation_samples)/batch_size), epochs=3, verbose=1)
 
+# Train model
+model.fit(x_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=3)
+
+# Save model to file
 model.save('model.h5')
