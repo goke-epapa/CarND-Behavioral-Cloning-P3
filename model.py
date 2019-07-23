@@ -5,7 +5,7 @@ import numpy as np
 
 # Load training data from CSV file
 samples = []
-with open('./data/driving_log.csv') as csvfile:
+with open('./car_training/driving_log.csv') as csvfile:
     reader = csv.reader(csvfile)
     count = 0
     for line in reader:
@@ -21,7 +21,7 @@ def load_raw_data(csv_data):
     for row in csv_data:
         source_path = row[0]
         filename = source_path.split('/')[-1]
-        current_path = './data/IMG/' + filename
+        current_path = './car_training/IMG/' + filename
 
         image = ndimage.imread(current_path)
         imgs.append(image)
@@ -47,6 +47,7 @@ images, measurements = load_raw_data(samples)
 
 # Augment images by flipping images and multiplying measurements by -1
 augmented_images, augmented_measurements = augment_images(images, measurements)
+
 x_train = np.array(augmented_images)
 y_train = np.array(augmented_measurements)
 
@@ -73,7 +74,7 @@ model.add(Dense(1))
 model.compile(loss='mse', optimizer='adam')
 
 # Train model
-model.fit(x_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=5)
+model.fit(x_train, y_train, validation_split=0.2, shuffle=True, epochs=3)
 
 # Save model to file
 model.save('model.h5')
