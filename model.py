@@ -4,24 +4,26 @@ from scipy import ndimage
 import numpy as np
 
 # Load training data from CSV file
-samples = []
-with open('./car_training/driving_log.csv') as csvfile:
-    reader = csv.reader(csvfile)
-    count = 0
-    for line in reader:
-        if count != 0:
-            samples.append(line)
-        count += 1
 
+def load_from_csv(filepath):
+    samples = []
+    with open(filepath) as csvfile:
+        reader = csv.reader(csvfile)
+        count = 0
+        for line in reader:
+            if count != 0:
+                samples.append(line)
+            count += 1
+    return samples
 
-def load_raw_data(csv_data):
+def load_raw_data(csv_data, directory_name):
     imgs = []
     measures = []
 
     for row in csv_data:
         source_path = row[0]
         filename = source_path.split('/')[-1]
-        current_path = './car_training/IMG/' + filename
+        current_path = './' + directory_name + '/IMG/' + filename
 
         image = ndimage.imread(current_path)
         imgs.append(image)
@@ -41,16 +43,23 @@ def augment_images(raw_images, raw_measurements):
     return augmented_imgs, augmented_measures
 
 
-# Load raw images
-images, measurements = load_raw_data(samples)
+# Load training images 1
+images1, measurements1 = load_raw_data(load_from_csv('./car_training/driving_log.csv'), 'car_training')
 
+# Load training images 2
+images2, measurements2 = load_raw_data(load_from_csv('./car_training_old/driving_log.csv'), 'car_training_old')
+
+# Load sample training images
+images3, measurements3 = load_raw_data(load_from_csv('./data/driving_log.csv'), 'data')
+
+images = images1 + images2 + images3
+measurements = measurements1 + measurements2 + measurements3
 
 # Augment images by flipping images and multiplying measurements by -1
 augmented_images, augmented_measurements = augment_images(images, measurements)
 
-x_train = np.array(images)
-y_train = np.array(measurements)
-
+x_train = np.array(augmented_images)
+y_train = np.array(augmented_measurements)
 
 # Nvidia Self Driving Car CNN
 from keras.models import Sequential
