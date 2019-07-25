@@ -80,7 +80,7 @@ In order to gauge how well the model was working, I split my image and steering 
 
 To combat the over-fitting, I modified the model and added a dropout layer.
 
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track to improve the driving behavior in these cases, I improved the training reduced the number of epochs to 5
+The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track to improve the driving behavior in these cases, I improved the training by reducing the number of epochs to 5
 
 At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
 
@@ -121,9 +121,9 @@ To capture good driving behavior, I first recorded over two laps on track one us
 
 ![alt text][image1]
 
-Then I repeated this process on track one this time, I didn't slow down at corners.
+Then I repeated this process on track one this time, I did not slow down at corners.
 
-I also added the samples training data provided to have more data points.
+I also added the sample training data provided to have more data points.
 
 To augment the data set, I flipped images and angles. For example, here is an image that has then been flipped:
 
