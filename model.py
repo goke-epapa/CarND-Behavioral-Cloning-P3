@@ -61,7 +61,7 @@ augmented_images, augmented_measurements = augment_images(images, measurements)
 x_train = np.array(augmented_images)
 y_train = np.array(augmented_measurements)
 
-# Nvidia Self Driving Car CNN
+# Improved Nvidia End to End Self Driving Car CNN
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Cropping2D, Dropout
 from keras.layers.convolutional import Conv2D
